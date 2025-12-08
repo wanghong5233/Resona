@@ -1,0 +1,80 @@
+---
+alwaysApply: true
+---
+
+
+# 项目编码风格和命名规范
+
+## 1. 通用原则
+- **清晰易读:** 代码应易于阅读和理解。清晰性优先于简洁性。
+- **自文档化代码:** 努力编写能够自我解释的代码。为变量、函数和类使用有意义的名称。
+- **DRY (Don't Repeat Yourself):** 避免重复代码。使用函数、类和模块来重用代码。
+- **KISS (Keep It Simple, Stupid):** 保持解决方案尽可能简单，避免不必要的复杂性。
+- **一致性:** 遵循项目中现有的编码风格。
+
+## 2. 命名规范
+- **通用:** 所有命名都应使用英文。
+- **文件:**
+    - Python: 使用蛇形命名法 `snake_case.py` (例如: `user_service.py`)。
+    - TypeScript/React: 组件使用帕斯卡命名法 `PascalCase.ts` / `.tsx` (例如: `UserAvatar.tsx`)，非组件文件使用驼峰命名法 `camelCase.ts` (例如: `apiClient.ts`)。
+- **变量和函数:**
+    - Python: 使用蛇形命名法 `snake_case` (例如: `user_name`, `get_user_data()`)。
+    - TypeScript/JavaScript: 使用驼峰命名法 `camelCase` (例如: `userName`, `getUserData()`)。
+- **类 (Class):**
+    - Python: 使用帕斯卡命名法 `PascalCase` (例如: `UserService`)。
+    - TypeScript/JavaScript: 使用帕斯卡命名法 `PascalCase` (例如: `class UserService`)。
+- **常量:**
+    - Python 和 TS/JS 均使用大写蛇形命名法 `UPPER_SNAKE_CASE` (例如: `MAX_RETRIES`)。
+- **接口和类型 (TypeScript):**
+    - 使用帕斯卡命名法 `PascalCase` (例如: `User`, `UserProps`)。
+
+## 3. Python 特定指南
+- **PEP 8:** 严格遵守 PEP 8 风格指南。
+- **文档字符串 (Docstrings):**
+    - 所有模块、函数、类和方法都应包含文档字符串。
+    - 使用 Google Python Style 风格的文档字符串。
+    - 示例:
+      ```python
+      def my_function(arg1, arg2):
+          """函数功能的简短摘要。
+
+          关于函数作用的详细描述。
+
+          Args:
+              arg1 (str): 参数1的描述。
+              arg2 (int): 参数2的描述。
+
+          Returns:
+              bool: 返回值的描述。
+          """
+          # ... 函数体 ...
+      ```
+- **类型提示 (Type Hinting):** 尽可能为所有函数签名和变量使用类型提示，以提高代码清晰度并支持静态分析。
+- **导入 (Imports):**
+    - 按照以下顺序对导入进行分组:
+        1. 标准库导入
+        2. 第三方库导入
+        3. 本地应用/库特定导入
+    - 在每个组内按字母顺序排序。
+
+## 4. TypeScript/React 特定指南
+- **ESLint/Prettier:** 遵守项目配置的 ESLint 和 Prettier 规则。
+- **组件结构:**
+    - 优先使用带有 Hooks 的函数式组件，而不是类组件。
+    - 保持组件小而美，专注于单一职责。
+    - 尽可能将逻辑与视图分离。
+- **状态管理:** 一致地使用项目中现有的状态管理方案 (从文件结构看是 `valtio`)。
+- **类型定义:**
+    - 充分利用 TypeScript 的优势，尽可能避免使用 `any`。
+    - 为 props、API 响应和状态定义清晰的接口 (`interface`) 或类型 (`type`)。
+- **样式:** 为组件作用域的样式使用 CSS Modules 或项目中现有的样式方案 (如 `.scss` 文件)。
+
+## 5. 注释
+- **目的:** 使用注释来解释 *为什么* 这么做，而不是 *做了什么*。代码本身应该能解释“做了什么”。
+- **TODOs:** 使用 `// TODO:` 标记待办事项，使用 `// FIXME:` 标记需要修复的错误代码，并附上简要说明。
+- **清晰度:** 在解释代码时，自动添加详细和透彻的注释。
+
+## 6. API 和数据处理
+- **API 端点:** 设计直观且一致的 RESTful API 端点。
+- **错误处理:** 在前端和后端都实现健壮的错误处理机制，并提供清晰的错误信息。
+- **数据验证:** 在后端验证所有传入的数据 (例如，在 FastAPI 中使用 Pydantic 模型)。

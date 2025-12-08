@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # ==================== Backend Service ====================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: resona-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__  # 排除缓存目录
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - LLM_BACKEND=${LLM_BACKEND:-mock}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - redis
+    networks:
+      - resona-network
+    restart: unless-stopped
+
+  # ==================== Redis Service ====================
+  redis:
+    image: redis:7-alpine
+    container_name: resona-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - resona-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+# ==================== Networks ====================
+networks:
+  resona-network:
+    driver: bridge
+
+# ==================== Volumes ====================
+volumes:
+  redis_data:
+    driver: local
+
