@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resona - 高情商社交助手</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      overflow: hidden;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+
+    /* 自定义拖动区域 */
+    .drag-region {
+      -webkit-app-region: drag;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    .drag-region h1 {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .drag-region .controls {
+      -webkit-app-region: no-drag;
+      display: flex;
+      gap: 10px;
+    }
+
+    .drag-region button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+
+    .drag-region button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-section {
+      margin-bottom: 20px;
+    }
+
+    .input-section label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .input-section textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .input-section textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .selectors {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .selectors select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      background: white;
+    }
+
+    .selectors select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .generate-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .replies-section {
+      margin-top: 20px;
+      flex: 1;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .empty-state {
+      flex: 1;
+      border: 1px dashed #ddd;
+      border-radius: 10px;
+      background: #fafafa;
+      color: #888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .empty-state b {
+      color: #555;
+    }
+
+    .reply-card {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 4px solid #667eea;
+    }
+
+    .reply-card .reply-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .reply-card .tags {
+      display: flex;
+      gap: 6px;
+    }
+
+    .reply-card .tag {
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .reply-card .copy-btn {
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+    }
+
+    .reply-card .copy-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .reply-card .reply-content {
+      color: #333;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .status-bar {
+      padding: 8px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #ddd;
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border-left: 4px solid #c33;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 拖动区域 -->
+    <div class="drag-region">
+      <h1>Resona - 高情商社交助手</h1>
+      <div class="controls">
+        <button onclick="window.electronAPI.hideWindow()">隐藏</button>
+        <button onclick="window.close()">关闭</button>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="content">
+      <!-- 输入区域 -->
+      <div class="input-section">
+        <label>对话内容</label>
+        <textarea id="dialogue" placeholder="请输入对话内容..."></textarea>
+      </div>
+
+      <!-- 选择器 -->
+      <div class="selectors">
+        <select id="mbti">
+          <option value="INTJ">INTJ (建筑师)</option>
+          <option value="INTP">INTP (逻辑学家)</option>
+          <option value="ENTJ">ENTJ (指挥官)</option>
+          <option value="ENTP">ENTP (辩论家)</option>
+          <option value="INFJ">INFJ (提倡者)</option>
+          <option value="INFP">INFP (调停者)</option>
+          <option value="ENFJ">ENFJ (主人公)</option>
+          <option value="ENFP">ENFP (竞选者)</option>
+          <option value="ISTJ">ISTJ (物流师)</option>
+          <option value="ISFJ">ISFJ (守卫者)</option>
+          <option value="ESTJ">ESTJ (总经理)</option>
+          <option value="ESFJ">ESFJ (执政官)</option>
+          <option value="ISTP">ISTP (鉴赏家)</option>
+          <option value="ISFP">ISFP (探险家)</option>
+          <option value="ESTP">ESTP (企业家)</option>
+          <option value="ESFP">ESFP (表演者)</option>
+        </select>
+
+        <select id="scenario">
+          <option value="workplace">职场</option>
+          <option value="intimate">亲密关系</option>
+          <option value="family">家庭</option>
+          <option value="friendship">友情</option>
+          <option value="social">社交</option>
+        </select>
+
+        <select id="intent">
+          <option value="refuse">拒绝</option>
+          <option value="apologize">道歉</option>
+          <option value="request">请求</option>
+          <option value="boundary">边界</option>
+          <option value="comfort">安慰</option>
+          <option value="explain">解释</option>
+          <option value="gratitude">感谢</option>
+          <option value="clarify">澄清</option>
+        </select>
+      </div>
+
+      <!-- 生成按钮 -->
+      <button class="generate-btn" id="generateBtn" onclick="generateReplies()">生成回复</button>
+
+      <!-- 回复展示区域 -->
+      <div class="replies-section" id="repliesSection"></div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <span id="statusText">就绪</span>
+      <span id="apiStatus">API: 未连接</span>
+    </div>
+  </div>
+
+  <script>
+    // 后端 API 地址（从 Desktop 配置读取，默认 8080）
+    let API_BASE_URL = 'http://localhost:8080/api/v1'
+
+    async function initApiBaseUrl() {
+      try {
+        if (window.electronAPI && window.electronAPI.getConfig) {
+          const v = await window.electronAPI.getConfig('apiBaseUrl')
+          if (v) API_BASE_URL = String(v).replace(/\/+$/, '')
+        }
+      } catch (_) {
+        // ignore
+      }
+    }
+
+    async function loadPreferences() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.getConfig) return
+        const mbti = await window.electronAPI.getConfig('mbti')
+        const scenario = await window.electronAPI.getConfig('scenario')
+        const intent = await window.electronAPI.getConfig('intent')
+
+        const mbtiEl = document.getElementById('mbti')
+        const scenarioEl = document.getElementById('scenario')
+        const intentEl = document.getElementById('intent')
+
+        if (mbtiEl && mbti) mbtiEl.value = String(mbti)
+        if (scenarioEl && scenario) scenarioEl.value = String(scenario)
+        if (intentEl && intent) intentEl.value = String(intent)
+      } catch (_) {
+        // ignore
+      }
+    }
+
+    function bindPreferencePersistence() {
+      if (!window.electronAPI || !window.electronAPI.setConfig) return
+      const mbtiEl = document.getElementById('mbti')
+      const scenarioEl = document.getElementById('scenario')
+      const intentEl = document.getElementById('intent')
+
+      mbtiEl?.addEventListener('change', () => {
+        window.electronAPI.setConfig('mbti', mbtiEl.value)
+      })
+      scenarioEl?.addEventListener('change', () => {
+        window.electronAPI.setConfig('scenario', scenarioEl.value)
+      })
+      intentEl?.addEventListener('change', () => {
+        window.electronAPI.setConfig('intent', intentEl.value)
+      })
+    }
+
+    // 检查 API 连接状态
+    async function checkAPIStatus() {
+      try {
+        const response = await fetchWithTimeout(`${API_BASE_URL}/health`, {}, 2000)
+        if (response.ok) {
+          document.getElementById('apiStatus').textContent = 'API: ✅ 已连接'
+          document.getElementById('apiStatus').style.color = '#0c0'
+          return true
+        } else {
+          throw new Error('API 返回错误')
+        }
+      } catch (error) {
+        document.getElementById('apiStatus').textContent = 'API: ❌ 未连接'
+        document.getElementById('apiStatus').style.color = '#c33'
+        return false
+      }
+    }
+
+    function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+      const controller = new AbortController()
+      const timer = window.setTimeout(() => controller.abort(), timeoutMs)
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => window.clearTimeout(timer))
+    }
+
+    // 生成回复
+    // --- UI helpers ---
+    function setStatus(message, { color = '#666', timeoutMs = 2000 } = {}) {
+      const statusText = document.getElementById('statusText')
+      if (!statusText) return
+      statusText.textContent = message
+      statusText.style.color = color
+      if (timeoutMs) {
+        window.clearTimeout(window.__resonaStatusTimer)
+        window.__resonaStatusTimer = window.setTimeout(() => {
+          statusText.textContent = '就绪'
+          statusText.style.color = '#666'
+        }, timeoutMs)
+      }
+    }
+
+    function escapeHtml(input) {
+      return String(input)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+    }
+
+    // Latest replies in memory (for safe copy action)
+    let latestReplies = []
+
+    async function generateReplies() {
+      const dialogue = document.getElementById('dialogue').value.trim()
+      if (!dialogue) {
+        setStatus('请输入对话内容', { color: '#c33', timeoutMs: 2500 })
+        document.getElementById('dialogue')?.focus()
+        return
+      }
+
+      const mbti = document.getElementById('mbti').value
+      const scenario = document.getElementById('scenario').value
+      const intent = document.getElementById('intent').value
+
+      const generateBtn = document.getElementById('generateBtn')
+      const repliesSection = document.getElementById('repliesSection')
+
+      // 禁用按钮
+      generateBtn.disabled = true
+      generateBtn.textContent = '生成中...'
+      setStatus('正在调用 AI 生成回复...', { color: '#666', timeoutMs: 0 })
+      repliesSection.innerHTML = '<div class="loading">⏳ 生成中，请稍候...</div>'
+
+      try {
+        const ok = await checkAPIStatus()
+        if (!ok) {
+          throw new Error('后端未连接（请先启动 resona-backend / 检查 API_BASE_URL）')
+        }
+
+        const response = await fetchWithTimeout(`${API_BASE_URL}/reply/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            dialogue: dialogue,
+            mbti: mbti,
+            scenario: scenario,
+            intent: intent,
+            context: null,
+          }),
+        }, 20000)
+
+        if (!response.ok) {
+          throw new Error(`API 错误: ${response.status}`)
+        }
+
+        const data = await response.json()
+        displayReplies(data.replies, data.risk_warning)
+        setStatus(`生成成功：${data.replies.length} 条回复`, { color: '#0c0', timeoutMs: 2000 })
+      } catch (error) {
+        console.error('生成失败:', error)
+        const msg = (error && error.name === 'AbortError')
+          ? '请求超时：后端长时间无响应（请检查后端是否启动/网络是否通畅）'
+          : (error && error.message ? String(error.message) : '未知错误')
+        repliesSection.innerHTML = `<div class="error">❌ 生成失败: ${escapeHtml(msg)}<br>请检查后端服务是否运行</div>`
+        setStatus('生成失败', { color: '#c33', timeoutMs: 2500 })
+      } finally {
+        generateBtn.disabled = false
+        generateBtn.textContent = '生成回复'
+      }
+    }
+
+    function renderEmptyState() {
+      const repliesSection = document.getElementById('repliesSection')
+      repliesSection.innerHTML = `
+        <div class="empty-state">
+          <div>
+            <div><b>还没有生成回复</b></div>
+            <div>在上方输入对话后点击<b>生成回复</b>。</div>
+            <div>或使用托盘：<b>从剪贴板粘贴并生成</b>（更快）。</div>
+            <div>快捷键：<b>Ctrl+Shift+R</b>（唤起并填入剪贴板）。</div>
+          </div>
+        </div>
+      `
+    }
+
+    // 展示回复
+    function displayReplies(replies, riskWarning) {
+      const repliesSection = document.getElementById('repliesSection')
+      
+      latestReplies = Array.isArray(replies) ? replies : []
+
+      let html = ''
+
+      // 风险提示
+      if (riskWarning) {
+        // 兼容两种格式：
+        // 1) 旧格式：{ is_risky, warning_message, reason }
+        // 2) 新格式：{ level, type, reason, suggestion, keywords }
+        const isRisky =
+          (riskWarning.is_risky === true) ||
+          (typeof riskWarning.level === 'string' && riskWarning.level !== 'safe') ||
+          (typeof riskWarning.risk_level === 'string' && riskWarning.risk_level !== 'safe')
+
+        const msg =
+          riskWarning.warning_message ||
+          riskWarning.reason ||
+          (riskWarning.type ? `检测到风险：${riskWarning.type}` : null) ||
+          '存在风险'
+
+        if (isRisky) {
+          const extra = riskWarning.suggestion ? `<div style="margin-top:6px;opacity:.9">${escapeHtml(riskWarning.suggestion)}</div>` : ''
+          const kw = Array.isArray(riskWarning.keywords) && riskWarning.keywords.length
+            ? `<div style="margin-top:6px;opacity:.8">关键词：${escapeHtml(riskWarning.keywords.join('、'))}</div>`
+            : ''
+          html += `<div class="error">⚠️ ${escapeHtml(msg)}${extra}${kw}</div>`
+        }
+      }
+
+      // 回复卡片
+      latestReplies.forEach((reply, index) => {
+        const tags = (reply.style_tags || [])
+          .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
+          .join('')
+        const safeContent = escapeHtml(reply.content || '').replace(/\n/g, '<br>')
+        html += `
+          <div class="reply-card">
+            <div class="reply-header">
+              <div class="tags">
+                <span class="tag">回复 ${index + 1}</span>
+                ${tags}
+              </div>
+              <button class="copy-btn" data-index="${index}">复制</button>
+            </div>
+            <div class="reply-content">${safeContent}</div>
+          </div>
+        `
+      })
+
+      repliesSection.innerHTML = html
+    }
+
+    // 复制到剪贴板
+    async function copyToClipboard(text) {
+      try {
+        await window.electronAPI.clipboard.write(text)
+        setStatus('已复制到剪贴板', { color: '#0c0', timeoutMs: 1500 })
+      } catch (error) {
+        console.error('复制失败:', error)
+        setStatus('复制失败', { color: '#c33', timeoutMs: 2500 })
+      }
+    }
+
+    // 页面加载时检查 API 状态
+    window.addEventListener('DOMContentLoaded', () => {
+      renderEmptyState()
+
+      // Copy button handler (event delegation)
+      const repliesSection = document.getElementById('repliesSection')
+      if (repliesSection) {
+        repliesSection.addEventListener('click', (e) => {
+          const btn = e.target && e.target.closest ? e.target.closest('.copy-btn') : null
+          if (!btn) return
+          const idx = Number(btn.getAttribute('data-index'))
+          const content = latestReplies[idx] && latestReplies[idx].content
+          if (typeof content === 'string') {
+            copyToClipboard(content)
+          }
+        })
+      }
+
+      initApiBaseUrl().then(() => {
+        checkAPIStatus()
+        setInterval(checkAPIStatus, 30000) // 每 30 秒检查一次
+      })
+
+      loadPreferences().then(() => {
+        bindPreferencePersistence()
+      })
+
+      // 托盘动作：粘贴到输入框 / 粘贴并生成
+      if (window.electronAPI && window.electronAPI.onTrayPasteDialogue) {
+        window.electronAPI.onTrayPasteDialogue((payload) => {
+          const text = (payload && payload.text) ? String(payload.text) : ''
+          const autoGenerate = !!(payload && payload.autoGenerate)
+          const el = document.getElementById('dialogue')
+          if (el) {
+            el.value = text
+          }
+          if (autoGenerate) {
+            generateReplies()
+          }
+        })
+      }
+
+      // 快捷键：读取剪贴板并填入输入框
+      if (window.electronAPI && window.electronAPI.onShortcutTriggered) {
+        window.electronAPI.onShortcutTriggered(async () => {
+          try {
+            const text = await window.electronAPI.clipboard.read()
+            const el = document.getElementById('dialogue')
+            if (el) el.value = text || ''
+          } catch (_) {
+            // ignore
+          }
+        })
+      }
+
+      // 监听截图完成事件（智能识别）
+      if (window.electronAPI && window.electronAPI.onScreenshotCaptured) {
+        window.electronAPI.onScreenshotCaptured(async (payload) => {
+          const { image } = payload || {}
+
+          // 关键体验：截图后立刻让用户“看到我们在工作”
+          setStatus('已截图，正在识别并填入输入框...', { color: '#1890ff', timeoutMs: 0 })
+
+          const generateBtn = document.getElementById('generateBtn')
+          const repliesSection = document.getElementById('repliesSection')
+
+          // 禁用按钮
+          generateBtn.disabled = true
+          generateBtn.textContent = '识别中...'
+          repliesSection.innerHTML = '<div class="loading">🔍 识别截图中，请稍候...</div>'
+
+          try {
+            // 读取用户 MBTI
+            const mbti = document.getElementById('mbti').value
+
+            // 构建 FormData（将 Buffer 转换为 Blob）
+            if (!image || !Array.isArray(image) || image.length === 0) {
+              throw new Error('截图数据为空（未收到图片字节）')
+            }
+            const blob = new Blob([new Uint8Array(image)], { type: 'image/png' })
+            const formData = new FormData()
+            formData.append('image', blob, 'screenshot.png')
+            formData.append('mbti', mbti)
+
+            // 调用后端 OCR + 分析接口
+            const ok = await checkAPIStatus()
+            if (!ok) {
+              throw new Error('后端未连接（请先启动 resona-backend / 检查 API_BASE_URL）')
+            }
+
+            const response = await fetchWithTimeout(`${API_BASE_URL}/reply/analyze-from-image`, {
+              method: 'POST',
+              body: formData
+            }, 25000)
+
+            if (!response.ok) {
+              const errorText = await response.text()
+              throw new Error(`HTTP ${response.status}: ${errorText}`)
+            }
+
+            const result = await response.json()
+
+            // 展示识别的对话（可编辑）
+            const dialogueText = result.extracted_dialogue
+              .map(msg => `${msg.speaker}: ${msg.content}`)
+              .join('\n')
+            
+            const dialogueEl = document.getElementById('dialogue')
+            if (dialogueEl) {
+              dialogueEl.value = dialogueText
+            }
+
+            // 自动填充识别结果
+            const scenarioEl = document.getElementById('scenario')
+            const intentEl = document.getElementById('intent')
+            if (scenarioEl) scenarioEl.value = result.analysis.scenario
+            if (intentEl) intentEl.value = result.analysis.intent
+
+            // 清空回复区域，显示提示让用户检查后手动生成
+            repliesSection.innerHTML = `
+              <div class="empty-state">
+                <div>
+                  <div><b>✅ 识别完成！</b></div>
+                  <div>已自动填入对话内容和场景/意图识别结果。</div>
+                  <div><b>请检查识别结果是否准确，然后点击"生成回复"按钮。</b></div>
+                </div>
+              </div>
+            `
+            
+            // 显示风险预警（如果有）
+            if (result.risk_warning && result.risk_warning.level !== 'low') {
+              const riskMsg = result.risk_warning.reason || '检测到风险'
+              repliesSection.innerHTML = `
+                <div class="error">⚠️ ${escapeHtml(riskMsg)}</div>
+              ` + repliesSection.innerHTML
+            }
+            
+            setStatus('✅ 识别完成！请检查后点击"生成回复"', { color: '#52c41a', timeoutMs: 5000 })
+
+          } catch (error) {
+            console.error('Screenshot analysis failed:', error)
+            const msg = (error && error.name === 'AbortError')
+              ? '识别超时：后端长时间无响应（请检查后端是否启动/网络是否通畅）'
+              : (error && error.message ? String(error.message) : '未知错误')
+            repliesSection.innerHTML = `<div class="error">❌ 识别失败: ${escapeHtml(msg)}<br>请检查后端服务是否运行，或手动编辑对话框重试</div>`
+            setStatus(`❌ 识别失败: ${msg}`, { color: '#f5222d', timeoutMs: 5000 })
+          } finally {
+            generateBtn.disabled = false
+            generateBtn.textContent = '生成回复'
+          }
+        })
+      }
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+# Electron Builder 配置
+# 用于打包 Windows/macOS/Linux 应用
+
+appId: com.resona.desktop
+productName: Resona
+copyright: Copyright © 2026 Resona Team
+
+directories:
+  buildResources: resources
+  output: dist
+
+files:
+  - main/**/*
+  - preload/**/*
+  - resources/**/*
+  - renderer/**/*
+  - package.json
+
+# Windows 配置
+win:
+  target:
+    - nsis
+    - portable
+  artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Resona
+
+# macOS 配置
+mac:
+  target:
+    - dmg
+    - zip
+  icon: resources/icon.icns
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: null
+  entitlementsInherit: null
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# Linux 配置
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: resources/icon.png
+  category: Utility
+
+# 额外资源
+extraResources:
+  - from: resources
+    to: resources
+    filter:
+      - "**/*"
+
+# 打包排除
+asarUnpack:
+  - "**/*.node"
+
+# 发布配置（可选）
+publish: null

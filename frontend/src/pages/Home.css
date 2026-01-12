@@ -1,0 +1,34 @@
+.home-container {
+  min-height: 100vh;
+  background: #f0f2f5;
+  padding: 24px;
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.home-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.input-card {
+  margin-bottom: 24px;
+}
+
+.replies-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.reply-card {
+  transition: all 0.3s;
+}
+
+.reply-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}

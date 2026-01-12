@@ -8,18 +8,17 @@ services:
       dockerfile: Dockerfile
     container_name: resona-backend
     ports:
-      - "8000:8000"
+      - "8080:8000"
     volumes:
       - ./backend:/app
       - /app/__pycache__  # 排除缓存目录
+    env_file:
+      - ./backend/.env  # 直接从 backend/.env 读取所有环境变量
     environment:
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis  # Docker 内部服务发现
       - REDIS_PORT=6379
-      - LLM_BACKEND=${LLM_BACKEND:-mock}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --no-access-log
     depends_on:
       - redis
     networks:

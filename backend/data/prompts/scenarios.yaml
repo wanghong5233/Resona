@@ -1,0 +1,55 @@
+# 场景配置
+
+# 职场场景
+workplace:
+  description: "职场沟通场景"
+  guidelines: |
+    - 保持专业性和职业素养
+    - 注重效率和结果导向
+    - 明确边界，避免模糊承诺
+    - 使用商务语言，适度正式
+  common_intents:
+    - refuse: "拒绝不合理要求"
+    - request: "提出合理诉求"
+    - boundary: "设定工作边界"
+    - clarify: "澄清误会"
+
+# 亲密关系场景
+intimate:
+  description: "恋爱、亲密关系场景"
+  guidelines: |
+    - 表达情感但保持真诚
+    - 注重对方感受和需求
+    - 避免冷暴力和情绪操控
+    - 用"我"信息表达感受
+  common_intents:
+    - comfort: "安抚情绪"
+    - apologize: "道歉"
+    - boundary: "设定关系边界"
+    - explain: "解释说明"
+
+# 家庭场景
+family:
+  description: "家庭关系场景"
+  guidelines: |
+    - 尊重长辈，关爱晚辈
+    - 表达关心但保持边界
+    - 避免说教和指责
+    - 寻求理解和和解
+  common_intents:
+    - boundary: "设定家庭边界"
+    - comfort: "安抚情绪"
+    - refuse: "拒绝过度干涉"
+
+# 社交场景
+social:
+  description: "一般社交场景"
+  guidelines: |
+    - 礼貌、得体、不失风度
+    - 保持适当距离感
+    - 避免过度承诺
+    - 尊重他人同时坚守原则
+  common_intents:
+    - refuse: "礼貌拒绝"
+    - gratitude: "表达感谢"
+    - boundary: "设定社交边界"
