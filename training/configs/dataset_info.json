@@ -1,0 +1,42 @@
+{
+  "resona_sft_train": {
+    "file_name": "sft_train.jsonl",
+    "formatting": "alpaca",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  },
+  "resona_sft_val": {
+    "file_name": "sft_val.jsonl",
+    "formatting": "alpaca",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output"
+    }
+  },
+  "resona_dpo_train": {
+    "file_name": "dpo_train.jsonl",
+    "formatting": "alpaca",
+    "ranking": true,
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  },
+  "resona_dpo_val": {
+    "file_name": "dpo_val.jsonl",
+    "formatting": "alpaca",
+    "ranking": true,
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  }
+}

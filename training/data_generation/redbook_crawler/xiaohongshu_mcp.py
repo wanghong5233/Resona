@@ -22,6 +22,8 @@ os.makedirs(DATA_DIR, exist_ok=True)
 browser_context = None
 main_page = None
 is_logged_in = False
+# 安全开关：默认只读，避免误触发发布评论等写操作
+READ_ONLY_MODE = os.getenv("XHS_READ_ONLY_MODE", "1") == "1"
 
 def process_url(url: str) -> str:
     """处理URL，确保格式正确并保留所有参数
@@ -1238,6 +1240,12 @@ async def post_smart_comment(url: str, comment_type: str = "引流") -> dict:
     Returns:
         dict: 包含笔记信息和评论类型的字典，供MCP客户端(如Claude)生成评论
     """
+    if READ_ONLY_MODE:
+        return {
+            "error": "当前为只读模式（XHS_READ_ONLY_MODE=1），已禁用发布相关操作。",
+            "hint": "如仅用于数据采集，请继续使用 search/get_note_content/get_note_comments。"
+        }
+
     # 处理URL
     processed_url = process_url(url)
     
@@ -1273,6 +1281,9 @@ async def post_comment(url: str, comment: str) -> str:
         url: 笔记 URL
         comment: 要发布的评论内容
     """
+    if READ_ONLY_MODE:
+        return "当前为只读模式（XHS_READ_ONLY_MODE=1），已禁用发布评论。"
+
     login_status = await ensure_browser()
     if not login_status:
         return "请先登录小红书账号，才能发布评论"

@@ -1,0 +1,36 @@
+# Llama-Factory SFT config (7B + QLoRA)
+
+model_name_or_path: Qwen/Qwen2.5-7B-Instruct
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_target: all
+
+dataset_dir: training/data/processed
+dataset: resona_sft_train
+eval_dataset: resona_sft_val
+template: qwen
+cutoff_len: 1024
+max_samples: 100000
+overwrite_cache: true
+preprocessing_num_workers: 8
+
+output_dir: training/outputs/checkpoints/sft_lora
+logging_steps: 10
+save_steps: 200
+plot_loss: true
+overwrite_output_dir: true
+
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8
+learning_rate: 8.0e-5
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+
+per_device_eval_batch_size: 2
+evaluation_strategy: steps
+eval_steps: 200
+
+ddp_timeout: 180000000
