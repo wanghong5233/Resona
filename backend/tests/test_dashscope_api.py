@@ -1,32 +1,60 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-测试 DashScope API Key 是否有效
+测试 DashScope API Key 是否有效。
+
+安全约束：
+- 严禁把真实 API Key 硬编码在源码里。
+- 真实 Key 只允许通过环境变量 DASHSCOPE_API_KEY 传入。
+- .env 文件已在 .gitignore 中，请把真实 Key 写到本地 .env 或在终端 export。
 """
 
-import httpx
+import io
 import json
+import os
 import sys
 
-# 确保输出使用 UTF-8
-if sys.platform == 'win32':
-    import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+import httpx
 
-API_KEY = "REDACTED-DASHSCOPE-KEY"
-BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-MODEL_NAME = "qwen-plus"
 
-def test_dashscope_api():
-    """测试 DashScope API"""
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+
+
+API_KEY = os.environ.get("DASHSCOPE_API_KEY", "").strip()
+BASE_URL = os.environ.get(
+    "DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"
+)
+MODEL_NAME = os.environ.get("DASHSCOPE_MODEL_NAME", "qwen-plus")
+
+
+def _redact(key: str) -> str:
+    if not key:
+        return "(empty)"
+    if len(key) <= 12:
+        return "***"
+    return f"{key[:4]}...{key[-4:]}"
+
+
+def test_dashscope_api() -> None:
     print("=" * 60)
-    print("🧪 测试 DashScope API Key")
+    print("DashScope API Key 测试")
     print("=" * 60)
-    print(f"📝 API Key: {API_KEY[:20]}...{API_KEY[-10:]}")
-    print(f"🌐 Base URL: {BASE_URL}")
-    print(f"🤖 Model: {MODEL_NAME}")
+
+    if not API_KEY:
+        print(
+            "[FATAL] 未检测到环境变量 DASHSCOPE_API_KEY。\n"
+            "请先在本地 .env 文件设置（已在 .gitignore 中），或在终端临时 export 后再运行：\n"
+            "  PowerShell:  $env:DASHSCOPE_API_KEY = 'sk-xxxxxxxx'\n"
+            "  bash:        export DASHSCOPE_API_KEY=sk-xxxxxxxx"
+        )
+        sys.exit(2)
+
+    print(f"API Key  : {_redact(API_KEY)}")
+    print(f"Base URL : {BASE_URL}")
+    print(f"Model    : {MODEL_NAME}")
     print("=" * 60)
-    
+
     url = f"{BASE_URL}/chat/completions"
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -34,53 +62,45 @@ def test_dashscope_api():
     }
     payload = {
         "model": MODEL_NAME,
-        "messages": [
-            {"role": "user", "content": "你好，请回复'测试成功'"}
-        ],
+        "messages": [{"role": "user", "content": "你好，请回复'测试成功'"}],
         "temperature": 0.7,
         "max_tokens": 100,
     }
-    
-    print(f"\n📤 发送请求到: {url}")
-    print(f"📦 Payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
-    print("\n⏳ 等待响应...\n")
-    
+
+    print(f"\n[POST] {url}")
+    print(f"[payload] {json.dumps(payload, ensure_ascii=False)}")
+    print("等待响应...\n")
+
     try:
         with httpx.Client(timeout=30.0) as client:
             response = client.post(url, headers=headers, json=payload)
-            
-            print(f"📊 状态码: {response.status_code}")
-            print(f"📨 响应头:\n{json.dumps(dict(response.headers), ensure_ascii=False, indent=2)}\n")
-            
-            if response.status_code == 200:
-                data = response.json()
-                print("✅ API 调用成功!")
-                print(f"📝 完整响应:\n{json.dumps(data, ensure_ascii=False, indent=2)}\n")
-                
-                if "choices" in data and len(data["choices"]) > 0:
-                    content = data["choices"][0]["message"]["content"]
-                    print(f"💬 AI 回复: {content}")
-                    print("\n🎉 DashScope API Key 有效！")
-                else:
-                    print("⚠️ 响应格式不符合预期")
+
+        print(f"[status] {response.status_code}")
+        if response.status_code == 200:
+            data = response.json()
+            print("[OK] API 调用成功")
+            choices = data.get("choices") or []
+            if choices:
+                content = choices[0].get("message", {}).get("content", "")
+                print(f"[reply] {content}")
             else:
-                print(f"❌ API 调用失败!")
-                print(f"📝 错误响应:\n{response.text}\n")
-                
-                # 尝试解析错误信息
-                try:
-                    error_data = response.json()
-                    if "error" in error_data:
-                        print(f"🚨 错误详情: {error_data['error']}")
-                except:
-                    pass
-                    
+                print("[WARN] 响应格式不符合预期")
+        else:
+            print(f"[FAIL] HTTP {response.status_code}")
+            print(f"[body] {response.text}")
+            try:
+                err = response.json().get("error")
+                if err:
+                    print(f"[error] {err}")
+            except Exception:
+                pass
     except httpx.TimeoutException:
-        print("❌ 请求超时！请检查网络连接。")
+        print("[FAIL] 请求超时，请检查网络。")
     except httpx.ConnectError:
-        print("❌ 连接失败！请检查网络连接或 URL 是否正确。")
-    except Exception as e:
-        print(f"❌ 发生未知错误: {type(e).__name__}: {e}")
+        print("[FAIL] 连接失败，请检查网络/URL。")
+    except Exception as exc:
+        print(f"[FAIL] {type(exc).__name__}: {exc}")
+
 
 if __name__ == "__main__":
     test_dashscope_api()

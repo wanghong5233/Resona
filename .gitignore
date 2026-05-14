@@ -90,3 +90,16 @@ Thumbs.db
 # Browser data (from existing Redbook-Search-Comment-MCP2.0)
 browser_data/
 
+# Private / personal materials (resume, interview notes, business plans, internal docs)
+# 注意：以下目录中的所有内容都是个人/内部资料，永不入库。
+docs/private/
+docs/private/**
+
+# 兜底：仓库根目录中的简历/面试/内部资料类文件（防止以后又被遗忘地建到根目录）
+/简历.md
+/RESUME_MATERIALS.md
+/OPC_项目构想书.md
+/Project_Design.md
+/PROJECT_PROGRESS_REPORT.md
+/SFT_STABLE_PLAN.md
+
